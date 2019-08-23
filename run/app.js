@@ -1,33 +1,31 @@
 const fs = require('fs');
 
-const complex_print = true;
+const complex_print = false;
 
-// easy one 
-// const source = 
-// [
-//     [null,2,6,9,null,null,1,null,8],
-//     [null,null,8,null,4,5,2,null,null],
-//     [3,null,5,null,null,null,7,null,4],
-//     [null,5,2,null,null,9,null,null,null],
-//     [9,null,null,3,null,6,null,null,null],
-//     [null,null,null,2,null,null,9,4,null],
-//     [6,null,1,null,null,null,5,null,7],
-//     [null,null,9,7,6,null,4,null,null],
-//     [2,null,7,null,null,4,3,6,null],
-// ];
-
-// hard one 
-const source = 
+const easy_source = 
 [
-    [4,null,null,9,null,1,null,null,null],
-    [7,null,null,null,null,3,null,null,null],
-    [6,2,null,null,null,null,null,null,3],
-    [null,null,5,null,null,null,null,1,6],
-    [null,null,null,5,null,6,null,null,null],
-    [1,4,null,null,null,null,7,null,null],
-    [2,null,null,null,null,null,null,5,7],
-    [null,null,null,4,null,null,null,null,9],
-    [null,null,null,1,null,9,null,null,2],
+    ['x', 2,  6,  9, 'x','x', 1, 'x', 8 ],
+    ['x','x', 8, 'x', 4,  5,  2, 'x','x'],
+    [ 3, 'x', 5, 'x','x','x', 7, 'x', 4 ],
+    ['x', 5,  2, 'x','x', 9, 'x','x','x'],
+    [ 9, 'x','x', 3, 'x', 6, 'x','x','x'],
+    ['x','x','x', 2, 'x','x', 9,  4, 'x'],
+    [ 6, 'x', 1, 'x','x','x', 5, 'x', 7 ],
+    ['x','x', 9,  7,  6, 'x', 4, 'x','x'],
+    [ 2, 'x', 7, 'x','x', 4,  3,  6, 'x'],
+];
+
+const hard_source = 
+[
+    [ 4, 'x','x', 9, 'x', 1, 'x','x','x'],
+    [ 7, 'x','x','x','x', 3, 'x','x','x'],
+    [ 6,  2, 'x','x','x','x','x','x', 3 ],
+    ['x','x', 5, 'x','x','x','x', 1,  6 ],
+    ['x','x','x', 5, 'x', 6, 'x','x','x'],
+    [ 1,  4, 'x','x','x','x', 7, 'x','x'],
+    [ 2, 'x','x','x','x','x','x', 5,  7 ],
+    ['x','x','x', 4, 'x','x','x','x', 9 ],
+    ['x','x','x', 1, 'x', 9, 'x','x', 2 ],
 ];
 
 const FULL_OBJ = {
@@ -42,6 +40,42 @@ const FULL_OBJ = {
     9 :true,
 };
 
+const squareSegmentArr = [
+    [0,0,0,1,1,1,2,2,2],
+    [0,0,0,1,1,1,2,2,2],
+    [0,0,0,1,1,1,2,2,2],
+    [3,3,3,4,4,4,5,5,5],
+    [3,3,3,4,4,4,5,5,5],
+    [3,3,3,4,4,4,5,5,5],
+    [6,6,6,7,7,7,8,8,8],
+    [6,6,6,7,7,7,8,8,8],
+    [6,6,6,7,7,7,8,8,8]
+];
+
+const rowSegmentArr = [
+    [0,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,1],
+    [2,2,2,2,2,2,2,2,2],
+    [3,3,3,3,3,3,3,3,3],
+    [4,4,4,4,4,4,4,4,4],
+    [5,5,5,5,5,5,5,5,5],
+    [6,6,6,6,6,6,6,6,6],
+    [7,7,7,7,7,7,7,7,7],
+    [8,8,8,8,8,8,8,8,8],
+];
+
+const columnSegmentArr = [
+    [0,1,2,3,4,5,6,7,8],
+    [0,1,2,3,4,5,6,7,8],
+    [0,1,2,3,4,5,6,7,8],
+    [0,1,2,3,4,5,6,7,8],
+    [0,1,2,3,4,5,6,7,8],
+    [0,1,2,3,4,5,6,7,8],
+    [0,1,2,3,4,5,6,7,8],
+    [0,1,2,3,4,5,6,7,8],
+    [0,1,2,3,4,5,6,7,8],
+];
+
 function solvePuzzle(source){
 
     did_work = false
@@ -50,9 +84,9 @@ function solvePuzzle(source){
 
     do{
 
-        work_obj = limitByRow(work_obj);
-        work_obj = limitByColumn(work_obj);
-        work_obj = limitBySegment(work_obj);
+        work_obj = limitBySegment(work_obj, rowSegmentArr, 'row');
+        work_obj = limitBySegment(work_obj, columnSegmentArr, 'column');
+        work_obj = limitBySegment(work_obj, squareSegmentArr, 'square');
     
         let {new_work_obj, new_did_work} = pullUpSelection(work_obj);
     
@@ -74,7 +108,7 @@ function replaceNullWithUnfiltered(puzzle){
 
             let to_return = cur; 
 
-            if(cur===null){
+            if(cur===null || cur==='x'){
                 to_return = JSON.parse(JSON.stringify(FULL_OBJ));
             }
 
@@ -113,62 +147,11 @@ function pullUpSelection(work_obj){
     }
 }
 
-function limitByRow( work_obj ){
+function limitBySegment( work_obj, segmentArr, name ){
 
-    return work_obj.map((cur, i, arr)=>{
-
-        const row = cur;
-
-        const used_numbers = row.reduce((used_numbers, cur)=>{
-            if(typeof cur==='number'){
-                used_numbers.push(cur);
-            }
-            return used_numbers;
-        },[]);
-
-        row.forEach((cur, i, arr)=>{
-            if(typeof cur==='object'){
-                used_numbers.forEach((to_delete)=>{ 
-                    delete cur[to_delete];
-                });
-                
-            }
-        });
-
-        return row;
-
-    });
-}
-
-function limitByColumn( work_obj ){
-
-    const used_arr_columns = work_obj.reduce((used_arr, row, i, arr)=>{
-        row.forEach((cur, i, arr)=>{
-            used_arr[i] = used_arr[i] || [];
-
-            if(typeof cur==='number'){
-                used_arr[i].push(cur);
-            }
-        });
-        return used_arr;
-    },[]);
-
-    return work_obj.map((row, outer_arr, outer_i)=>{
-
-        row.forEach((cur, i, arr)=>{
-            if(typeof cur==='object'){
-                used_arr_columns[i].forEach((found_number)=>{
-                    delete cur[found_number];
-                });
-            }
-        });
-
-        return row;
-    });
-
-}
-
-function limitBySegment( work_obj ){
+    if(segmentArr===undefined||segmentArr===null){
+        throw new Error(`segmentArr is ${segmentArr}`);
+    }
 
     // const segment_found_arr = [];
 
@@ -176,9 +159,10 @@ function limitBySegment( work_obj ){
 
         row.forEach((cur, column_number)=>{
 
+            const cur_segment = _lookUpSegment(row_number, column_number, segmentArr);
+            acc[cur_segment] = acc[cur_segment] || [];
+
             if(typeof cur==='number'){
-                const cur_segment = _lookUpSegment(row_number, column_number);
-                acc[cur_segment] = acc[cur_segment] || [];
                 acc[cur_segment].push(cur);
             }
         });
@@ -187,19 +171,22 @@ function limitBySegment( work_obj ){
     }, []);
 
     work_obj.forEach((row, row_number)=>{
-
         row.forEach((cur, column_number)=>{
-
             if(typeof cur==='object'){
-                const cur_segment = _lookUpSegment(row_number, column_number);
-                segment_found_arr[cur_segment].forEach((ele_to_delete)=>{
+                console.log(`row_number is ${row_number} column_number is ${column_number}`);
+                const cur_segment_number = _lookUpSegment(row_number, column_number, segmentArr);
+                segment_found_arr[cur_segment_number].forEach((ele_to_delete)=>{
                     delete cur[ele_to_delete];
                 });
             }
         });
     }, []);
 
-    // throw "not done";
+    console.log(`-----${name}-----`);
+
+    // console.log(segment_found_arr)
+    // process.exit();
+
     return work_obj;
 }
 
@@ -225,19 +212,11 @@ function _print( work_obj, complex ){
     });
 }
 
-function _lookUpSegment( row, column ){
+function _lookUpSegment( row, column, segmentArr ){
 
-    const segmentArr = [
-        [0,0,0,1,1,1,2,2,2],
-        [0,0,0,1,1,1,2,2,2],
-        [0,0,0,1,1,1,2,2,2],
-        [3,3,3,4,4,4,5,5,5],
-        [3,3,3,4,4,4,5,5,5],
-        [3,3,3,4,4,4,5,5,5],
-        [6,6,6,7,7,7,8,8,8],
-        [6,6,6,7,7,7,8,8,8],
-        [6,6,6,7,7,7,8,8,8]
-    ];
+    if(segmentArr===undefined||segmentArr===null){
+        throw new Error(`segmentArr is ${segmentArr}`);
+    }
 
     try{
         return segmentArr[row][column];
@@ -252,7 +231,8 @@ function _lookUpSegment( row, column ){
 
 (()=>{    
     const s = new Date();
-    solvePuzzle(source);
+    // solvePuzzle(easy_source);
+    solvePuzzle(hard_source);
     const e = new Date();
     console.log(`${e-s} ms run time`);
-})()
+})();
